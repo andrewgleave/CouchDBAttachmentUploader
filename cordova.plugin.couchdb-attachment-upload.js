@@ -1,5 +1,5 @@
 /*
-*   PhoneGap CouchDB Attachment Uploader Plugin
+*   Cordova CouchDB Attachment Uploader Plugin
 *   Copyright 2011 Red Robot Studios Ltd. All rights reserved.
 *   Based on Matt Kane's File Upload Plugin
 */
@@ -21,14 +21,14 @@ CouchDBAttachmentUploader.prototype.upload = function(filepath, couchURI, docID,
         }
     }
     var callback = 'window.plugins.CouchDBAttachmentUploader.callbackMap.' + key;
-    return PhoneGap.exec('CouchDBAttachmentUploader.upload', filepath, couchURI, docID, 
+    return cordova.exec('CouchDBAttachmentUploader.upload', filepath, couchURI, docID, 
                          docRevision, callback + '.success', callback + '.failure', options);
 }
 
 CouchDBAttachmentUploader.prototype.callbackMap = {};
 CouchDBAttachmentUploader.prototype.callbackIdx = 0;
 
-PhoneGap.addConstructor(function()  {
+cordova.addConstructor(function()  {
     if(!window.plugins) {
         window.plugins = {};
     }

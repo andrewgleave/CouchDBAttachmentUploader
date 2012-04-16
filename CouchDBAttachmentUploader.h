@@ -6,10 +6,10 @@
 //
 
 
-#import "PhoneGapCommand.h"
+#import "Cordova/CDVPlugin.h"
 
 
-@interface CouchDBAttachmentUploader : PhoneGapCommand {
+@interface CouchDBAttachmentUploader : CDVPlugin {
     
 }
 
