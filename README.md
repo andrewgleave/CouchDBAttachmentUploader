@@ -1,6 +1,6 @@
 #CouchDbAttachmentUploader
 
-Enables a PhoneGap app to push binary attachments straight to a CouchDB database
+Enables a Cordova app to push binary attachments straight to a CouchDB database
 
 ###Usage
 
