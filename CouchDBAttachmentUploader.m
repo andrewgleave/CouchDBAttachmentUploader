@@ -37,6 +37,10 @@
                                stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 }
 
+- (void)connection:(NSURLConnection*)connection didReceiveData:(NSData *)data {
+    [responseData appendData:data];
+}
+
 - (void)dealloc {
     [successCallback release];
     [failureCallback release];
@@ -55,7 +59,7 @@
 {
     NSUInteger argc = [arguments count];
     
-    if(argc < 5) {
+	if(argc < 5) {
         return; 
     }
 
@@ -68,7 +72,7 @@
     NSString *contentType = [options valueForKey:@"contentType"];
     NSString *httpMethod = [[options valueForKey:@"method"] uppercaseString];
     NSString *attachmentName = [options valueForKey:@"attachmentName"];
-    
+
     if(contentType == nil)
         contentType = @"image/jpeg";
     
@@ -91,25 +95,57 @@
     
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
     [req setHTTPMethod:httpMethod];
-    [req setValue:contentType forHTTPHeaderField:@"Content-type"];
+    [req setValue:contentType forHTTPHeaderField:@"Content-Type"];
     
-    NSError *error;
-    NSData *data = [NSData dataWithContentsOfURL:filepath options:0 error:&error];
-    if(data == nil) {
-        [self writeJavascript:[NSString stringWithFormat:@"%@(\"%@\");", 
+    if( 0 ){
+        // Legacy code, kept for comparison
+        NSError *error;
+        NSData *data = [NSData dataWithContentsOfURL:filepath options:0 error:&error];
+        if(data == nil) {
+            [self writeJavascript:[NSString stringWithFormat:@"%@(\"%@\");", 
                                failureCallback, 
                                [[error localizedDescription] 
                                 stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
         return;
+        }
+        [req setHTTPBody:data];
+    } else {
+        // Use instance of NSInputStream to read file while uploading
+        
+        // Get path from URL
+        NSString* path = [filepath path];
+        
+        // Must send length or iOS-Couchbase is not able to handle
+        // chunked transfer
+        int fileSize = [[[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil] fileSize];
+        [req setValue:[NSString stringWithFormat:@"%d",fileSize] forHTTPHeaderField:@"Content-Length"];
+        
+        // Create stream
+        NSInputStream* bodyStream = [[NSInputStream alloc] initWithFileAtPath:path];
+        if( nil == bodyStream ) {
+            [self writeJavascript:[NSString stringWithFormat:@"%@(\"Unable to access file path\");", 
+                                failureCallback]
+            ];
+            return;
+        }
+        
+        // Set stream as source for HTTP request content
+        [req setHTTPBodyStream:bodyStream];
     }
-    [req setHTTPBody:data];
     
     CouchDBAttachmentUploadDelegate *delegate = [[CouchDBAttachmentUploadDelegate alloc] init];
     delegate.uploader = self;
     delegate.successCallback = successCallback;
     delegate.failureCallback = failureCallback;
     
-    [NSURLConnection connectionWithRequest:req delegate:delegate];
+    NSURLConnection * conn = [NSURLConnection connectionWithRequest:req delegate:delegate];
+    if( nil == conn ) {
+        // Catch error creating a connection
+        [self writeJavascript:[NSString stringWithFormat:@"%@(\"Unable to create connection\");", 
+                            failureCallback]
+        ];
+        return;        
+    }
     [delegate release];
 }
 
