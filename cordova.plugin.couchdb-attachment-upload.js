@@ -8,7 +8,6 @@
 var CouchDBAttachmentUploader = function() {}
 
 CouchDBAttachmentUploader.prototype.upload = function(filepath, couchURI, docID, docRevision,  success, failure, options) {
-    
     var key = 'f' + this.callbackIdx++;
     window.plugins.CouchDBAttachmentUploader.callbackMap[key] = {
         success: function(result) {
