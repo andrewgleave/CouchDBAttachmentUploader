@@ -11,7 +11,11 @@ CouchDBAttachmentUploader.prototype.upload = function(filepath, couchURI, docID,
     var key = 'f' + this.callbackIdx++;
     window.plugins.CouchDBAttachmentUploader.callbackMap[key] = {
         success: function(result) {
-            success(result);
+        	if( result.error ) {
+        		failure(result.error);
+        	} else {
+            	success(result);
+            };
             delete window.plugins.CouchDBAttachmentUploader.callbackMap[key]
         },
         failure: function(result) {
