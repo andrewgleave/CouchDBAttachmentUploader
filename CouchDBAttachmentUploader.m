@@ -21,11 +21,13 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    // When uploading an attachment, the server answers a JSON structure
+    // that looks like: { ok:true, id:"12345", rev:"2-abcdef" }
+    // In the response, pass back to the script this JSON object so that it can
+    // be examined by client.
     NSString *response = [[NSString alloc] initWithData:self.responseData 
                                                encoding:NSUTF8StringEncoding];
-    NSString *js = [NSString stringWithFormat:@"%@(\"%@\");", 
-                    self.successCallback, 
-                    [response stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSString *js = [NSString stringWithFormat:@"%@(%@);",self.successCallback, response];
     [uploader writeJavascript:js];
     [response release];
 }
