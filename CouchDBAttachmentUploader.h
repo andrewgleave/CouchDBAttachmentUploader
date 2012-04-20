@@ -21,11 +21,13 @@
 @interface CouchDBAttachmentUploadDelegate : NSObject {
     NSString* successCallback;
     NSString* failureCallback;
+    NSString* progressCallback;
     CouchDBAttachmentUploader *uploader;
 }
 
 @property (nonatomic, copy) NSString *successCallback;
 @property (nonatomic, copy) NSString *failureCallback;
+@property (nonatomic, copy) NSString *progressCallback;
 @property (nonatomic, retain) NSMutableData *responseData;
 @property (nonatomic, retain) CouchDBAttachmentUploader *uploader;
 
