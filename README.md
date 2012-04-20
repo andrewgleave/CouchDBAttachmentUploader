@@ -13,17 +13,22 @@ Enables a Cordova app to push binary attachments straight to a CouchDB database
 
 ###Usage
 
-    window.plugins.CouchDBAttachmentUploader.upload($('#id_camera_image').attr('src'),
+    window.plugins.CouchDBAttachmentUploader.upload(
+        $('#id_camera_image').attr('src'),
         'http://127.0.0.1:5984/couchdb',
         doc.id,
         doc.rev,
-        function() { 
+        function(info) { 
             //success callback
         },
         function(error) {
             //failure callback
         },
-        {contentType: 'image/jpeg',
-        method: 'put',
-        attachmentName: 'photo.jpg'});
+        {
+            contentType: 'image/jpeg',
+            method: 'put',
+            attachmentName: 'photo.jpg',
+            progress: function(bytesUploaded, bytesTotal){}
+        }
+    );
 
