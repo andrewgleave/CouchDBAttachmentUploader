@@ -10,7 +10,7 @@
 
 @implementation CouchDBAttachmentUploadDelegate
 
-@synthesize successCallback, failureCallback, responseData, uploader;
+@synthesize successCallback, failureCallback, progressCallback, responseData, uploader;
 
 - (id)init {
     self = [super init];
@@ -43,9 +43,16 @@
     [responseData appendData:data];
 }
 
+- (void)connection:(NSURLConnection*)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
+    if( self.progressCallback ) {
+        [uploader writeJavascript:[NSString stringWithFormat:@"%@(%d,%d);",self.progressCallback,totalBytesWritten,totalBytesExpectedToWrite]];
+    }
+}
+
 - (void)dealloc {
     [successCallback release];
     [failureCallback release];
+    [progressCallback release];
     [responseData release];
     [uploader release];
     [super dealloc];
@@ -61,7 +68,8 @@
 {
     NSUInteger argc = [arguments count];
     
-	if(argc < 5) {
+	if(argc < 6) {
+        NSLog(@"CouchDBAttachmentUploader called with invalid number of arguments: %d",argc);
         return; 
     }
 
@@ -71,6 +79,7 @@
     NSString *docRevision = [arguments objectAtIndex:3];
     NSString *successCallback = [arguments objectAtIndex:4];
     NSString *failureCallback = [arguments objectAtIndex:5];
+    NSString *progressCallback = [arguments objectAtIndex:6];
     NSString *contentType = [options valueForKey:@"contentType"];
     NSString *httpMethod = [[options valueForKey:@"method"] uppercaseString];
     NSString *attachmentName = [options valueForKey:@"attachmentName"];
@@ -139,6 +148,7 @@
     delegate.uploader = self;
     delegate.successCallback = successCallback;
     delegate.failureCallback = failureCallback;
+    delegate.progressCallback = progressCallback;
     
     NSURLConnection * conn = [NSURLConnection connectionWithRequest:req delegate:delegate];
     if( nil == conn ) {
